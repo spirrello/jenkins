@@ -1,0 +1,27 @@
+---
+
+- hosts: jenkins
+  connection: local
+  become: no
+  gather_facts: no
+  vars:
+    - virtualbox: False
+  tasks:
+   - include: roles/virtualbox/tasks/main.yml
+
+
+- hosts: jenkins-agent
+  become: yes
+  gather_facts: yes
+  roles:
+    - jenkins_agent
+
+
+
+- hosts: jenkins-master
+  become: yes
+  gather_facts: yes
+  roles:
+    - jenkins_master
+
+

@@ -1,0 +1,5 @@
+[jenkins-master]
+ubuntu06 ansible_host=192.168.56.20
+
+[jenkins-agent]
+ubuntu07 ansible_host=192.168.56.21

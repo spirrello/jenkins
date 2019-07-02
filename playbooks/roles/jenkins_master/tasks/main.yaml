@@ -1,0 +1,165 @@
+---
+
+#The following two plays are only required until we get Jenkins added to Aptly.
+
+
+- name: Add Jenkins Apt key
+  apt_key:
+    url: https://pkg.jenkins.io/debian/jenkins-ci.org.key
+    state: present
+  tags:
+    - aptly
+
+
+
+- name: rm aptly locks
+  file:
+    name: /var/lib/dpkg/lock
+    state: absent
+  tags:
+    - aptly
+
+
+
+- name: add jenkins repo
+  apt_repository:
+    repo: deb https://pkg.jenkins.io/debian-stable binary/
+    state: present
+  tags:
+    - aptly
+
+
+
+- name: install prereqs
+  apt:
+    name: openjdk-8-jdk,nginx
+    update_cache: yes
+    state: present
+  tags:
+    - install_jenkins
+
+
+
+- name: install jekins
+  apt:
+    name: jenkins
+    update_cache: yes
+    state: present
+  tags:
+    - install_jenkins
+
+
+
+- name: Add jenkins user to sudo
+  user:
+    name: jenkins
+    group: sudo
+  tags:
+    - install_jenkins
+
+
+
+- name: Create a 2048-bit SSH key for user jenkins
+  user:
+    name: jenkins
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+    ssh_key_file: .ssh/id_rsa
+  tags:
+    - install_jenkins
+    - ssh
+
+
+
+- name: fetch jenkins public ssh keys
+  shell: cat /home/jenkins/.ssh/id_rsa.pub
+  register: ssh_keys
+  tags:
+    - install_jenkins
+    - ssh
+
+
+
+- name: deploy jenkins keys on all servers
+  authorized_key:
+    user: jenkins
+    key: "{{ item[0] }}"
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ ssh_keys.stdout }}"
+    - "{{groups['jenkins']}}"
+  tags:
+    - install_jenkins
+    - ssh
+
+
+
+- name: enable passwordless sudo
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^%sudo'
+    line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+  tags:
+    - install_jenkins
+    - ssh
+
+
+
+- name: copy nginx template
+  template:
+    src: roles/jenkins_master/templates/nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+  notify: restart nginx
+  tags:
+    - nginx
+
+
+
+- name: Add the user 'nginx' and a primary group of 'admin'
+  user:
+    name: nginx
+    comment: nginx
+  tags:
+    - nginx
+
+
+- name: start nginx
+  systemd:
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+    name: nginx
+  tags:
+    - nginx
+
+
+#Only want this pause to run during the initial deployment
+- name: pause to allow for default plugin installation to complete
+  pause:
+    prompt: "Browse to http://{{inventory_hostname}}:8080, enter the password in the Jenkins installation window then install the recommended plugins"
+    echo: yes
+    minutes: 10
+  tags:
+    - install_jenkins
+    - pause
+
+
+
+- name: "Build hosts file - ONLY NEEDED FOR TEST ENVIRONMENTS"
+  lineinfile:
+    dest: /etc/hosts
+    line: "{% for host in groups['jenkins-agent'] %}{{  hostvars[host].ansible_host }} {{host}} {% endfor %}"
+    state: present
+  when: inventory_hostname in groups['jenkins-master']
+  tags:
+    - install_jenkins
+    - master_hosts_file
+
+
+
+
+
+
+
+

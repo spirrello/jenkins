@@ -1,0 +1,21 @@
+---
+
+- name: restart jenkins
+  systemd:
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+    name: jenkins
+  tags:
+    - restart_jenkins_service
+
+
+
+- name: restart nginx
+  systemd:
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+    name: nginx
+  tags:
+    - restart_nginx_service

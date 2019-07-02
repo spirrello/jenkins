@@ -1,0 +1,9 @@
+[jenkins-master]
+jenkins-spirrello ansible_host=192.168.56.104
+
+[jenkins-agent]
+jenkins-slave ansible_host=192.168.56.105
+
+[jenkins:children]
+jenkins-master
+jenkins-agent

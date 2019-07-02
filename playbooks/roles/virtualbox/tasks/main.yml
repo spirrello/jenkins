@@ -1,0 +1,58 @@
+---
+
+
+
+- name: poweroff virtualbox VM
+  shell: VBoxManage controlvm {{item}} poweroff --type headless
+  ignore_errors: yes
+  with_items: "{{ groups['jenkins-master'] }}"
+  when: virtualbox
+  tags:
+    - virtualbox
+
+
+- name: pause to poweroff VM
+  pause:
+    prompt: "waiting"
+    echo: yes
+    seconds: 15
+  when: virtualbox
+  tags:
+    - virtualbox
+
+
+- name: restore virtualbox VM from a snapshot
+  shell: VBoxManage snapshot {{item}} restore {{snapshot}}
+  with_items: "{{ groups['jenkins-master'] }}"
+  when: virtualbox
+  tags:
+    - virtualbox
+
+
+- name: restoring VM
+  pause:
+    prompt: "waiting"
+    echo: yes
+    seconds: 15
+  when: virtualbox
+  tags:
+    - virtualbox
+
+
+- name: poweron virtualbox VM
+  shell: VBoxManage startvm {{item}} --type headless
+  with_items: "{{ groups['jenkins-master'] }}"
+  when: virtualbox
+  tags:
+    - virtualbox
+
+
+- name: pause to poweron VM
+  pause:
+    prompt: "waiting"
+    echo: yes
+    seconds: 30
+  when: virtualbox
+  tags:
+    - virtualbox
+

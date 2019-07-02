@@ -1,0 +1,32 @@
+---
+
+
+- name: Ubuntu - Add jenkins user to sudo
+  user:
+    name: jenkins
+    group: sudo
+    shell: /bin/bash
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  tags:
+    - install_jenkins
+
+
+- name: enable passwordless sudo
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^%sudo'
+    line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  tags:
+    - ssh
+
+
+- name: "Build hosts file - ONLY NEEDED FOR TEST ENVIRONMENTS"
+  lineinfile:
+    dest: /etc/hosts
+    line: "{% for host in groups['jenkins-master'] %}{{  hostvars[host].ansible_host }} {{host}} {% endfor %}"
+    state: present
+  tags:
+    - install_jenkins
+    - agent_hosts_file

@@ -1,0 +1,11 @@
+[jenkins-master]
+#c7-1 ansible_host=192.168.56.15
+c7-2 ansible_host=192.168.56.16
+
+[jenkins-agent]
+c7-2 ansible_host=192.168.56.16
+
+
+[jenkins:children]
+jenkins-master
+jenkins-agent
