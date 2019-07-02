@@ -7,8 +7,7 @@
   apt_key:
     url: https://pkg.jenkins.io/debian/jenkins-ci.org.key
     state: present
-  tags:
-    - aptly
+
 
 
 
@@ -16,8 +15,7 @@
   file:
     name: /var/lib/dpkg/lock
     state: absent
-  tags:
-    - aptly
+
 
 
 
@@ -25,8 +23,7 @@
   apt_repository:
     repo: deb https://pkg.jenkins.io/debian-stable binary/
     state: present
-  tags:
-    - aptly
+
 
 
 
@@ -35,8 +32,6 @@
     name: openjdk-8-jdk,nginx
     update_cache: yes
     state: present
-  tags:
-    - install_jenkins
 
 
 
@@ -45,8 +40,6 @@
     name: jenkins
     update_cache: yes
     state: present
-  tags:
-    - install_jenkins
 
 
 
@@ -54,8 +47,7 @@
   user:
     name: jenkins
     group: sudo
-  tags:
-    - install_jenkins
+
 
 
 
@@ -65,18 +57,13 @@
     generate_ssh_key: yes
     ssh_key_bits: 2048
     ssh_key_file: .ssh/id_rsa
-  tags:
-    - install_jenkins
-    - ssh
 
 
 
 - name: fetch jenkins public ssh keys
   shell: cat /home/jenkins/.ssh/id_rsa.pub
   register: ssh_keys
-  tags:
-    - install_jenkins
-    - ssh
+
 
 
 
@@ -88,9 +75,6 @@
   with_nested:
     - "{{ ssh_keys.stdout }}"
     - "{{groups['jenkins']}}"
-  tags:
-    - install_jenkins
-    - ssh
 
 
 
@@ -100,9 +84,6 @@
     state: present
     regexp: '^%sudo'
     line: '%sudo ALL=(ALL) NOPASSWD: ALL'
-  tags:
-    - install_jenkins
-    - ssh
 
 
 
@@ -111,8 +92,7 @@
     src: roles/jenkins_master/templates/nginx.conf.j2
     dest: /etc/nginx/nginx.conf
   notify: restart nginx
-  tags:
-    - nginx
+
 
 
 
@@ -120,8 +100,7 @@
   user:
     name: nginx
     comment: nginx
-  tags:
-    - nginx
+
 
 
 - name: start nginx
@@ -130,8 +109,7 @@
     enabled: yes
     daemon_reload: yes
     name: nginx
-  tags:
-    - nginx
+
 
 
 #Only want this pause to run during the initial deployment
@@ -140,9 +118,7 @@
     prompt: "Browse to http://{{inventory_hostname}}:8080, enter the password in the Jenkins installation window then install the recommended plugins"
     echo: yes
     minutes: 10
-  tags:
-    - install_jenkins
-    - pause
+
 
 
 
@@ -151,10 +127,6 @@
     dest: /etc/hosts
     line: "{% for host in groups['jenkins-agent'] %}{{  hostvars[host].ansible_host }} {{host}} {% endfor %}"
     state: present
-  when: inventory_hostname in groups['jenkins-master']
-  tags:
-    - install_jenkins
-    - master_hosts_file
 
 
 
