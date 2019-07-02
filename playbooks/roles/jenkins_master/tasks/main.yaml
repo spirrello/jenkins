@@ -1,13 +1,9 @@
 ---
 
-#The following two plays are only required until we get Jenkins added to Aptly.
-
-
 - name: Add Jenkins Apt key
   apt_key:
     url: https://pkg.jenkins.io/debian/jenkins-ci.org.key
     state: present
-
 
 
 
@@ -18,12 +14,10 @@
 
 
 
-
 - name: add jenkins repo
   apt_repository:
     repo: deb https://pkg.jenkins.io/debian-stable binary/
     state: present
-
 
 
 
@@ -66,7 +60,6 @@
 
 
 
-
 - name: deploy jenkins keys on all servers
   authorized_key:
     user: jenkins
@@ -95,7 +88,6 @@
 
 
 
-
 - name: Add the user 'nginx' and a primary group of 'admin'
   user:
     name: nginx
@@ -118,7 +110,6 @@
     prompt: "Browse to http://{{inventory_hostname}}:8080, enter the password in the Jenkins installation window then install the recommended plugins"
     echo: yes
     minutes: 10
-
 
 
 
