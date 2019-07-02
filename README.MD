@@ -13,8 +13,6 @@ Requirements
 Example Installation Process:
 
 ```
-Use --extra-vars "virtualbox=True" to restore snapshot when using virtual box.
-
 ansible-playbook  -i playbooks/environments/virtualbox/inventory playbooks/install_jenkins.yml
 ```
 

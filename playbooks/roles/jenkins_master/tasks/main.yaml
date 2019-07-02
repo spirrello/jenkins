@@ -41,6 +41,10 @@
   user:
     name: jenkins
     group: sudo
+    shell: /bin/bash
+    #home: /var/lib/jenkins
+  tags:
+   - jenkins_account
 
 
 
@@ -51,12 +55,16 @@
     generate_ssh_key: yes
     ssh_key_bits: 2048
     ssh_key_file: .ssh/id_rsa
+  tags:
+   - jenkins_account
 
 
 
 - name: fetch jenkins public ssh keys
   shell: cat /home/jenkins/.ssh/id_rsa.pub
   register: ssh_keys
+  tags:
+   - jenkins_account
 
 
 
@@ -68,6 +76,8 @@
   with_nested:
     - "{{ ssh_keys.stdout }}"
     - "{{groups['jenkins']}}"
+  tags:
+   - jenkins_account
 
 
 
