@@ -78,6 +78,7 @@
     - "{{groups['jenkins']}}"
   tags:
    - jenkins_account
+   - deploy_jenkins_keys
 
 
 

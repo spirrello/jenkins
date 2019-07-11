@@ -29,18 +29,67 @@
    - agent_hosts_file
 
 
+
+- name: Add jenkins user to sudo
+  user:
+    name: jenkins
+    group: sudo
+    shell: /bin/bash
+    #home: /var/lib/jenkins
+  tags:
+   - jenkins_agent_account
+
+
+
+- name: Create a 2048-bit SSH key for user jenkins
+  user:
+    name: jenkins
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+    ssh_key_file: .ssh/id_rsa
+  tags:
+   - jenkins_agent_account
+
+
+
+- name: fetch jenkins public ssh keys
+  shell: cat /home/jenkins/.ssh/id_rsa.pub
+  register: ssh_keys
+  tags:
+   - jenkins_agent_account
+
+
+
+- name: deploy jenkins keys on all servers
+  authorized_key:
+    user: jenkins
+    key: "{{ item[0] }}"
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ ssh_keys.stdout }}"
+    - "{{groups['jenkins']}}"
+  tags:
+   - jenkins_agent_account
+
+
+
 - name: rm aptly locks
   file:
     name: /var/lib/dpkg/lock
     state: absent
   tags:
    - agent_aptly
-   - agent_git
+   - agent_packages
 
-- name: install git
+
+
+- name: install packages
   apt:
-    name: git
+    name: "{{item}}"
     update_cache: yes
     state: present
+  loop:
+    - git
+    - openjdk-8-jdk
   tags:
-   - agent_git
+   - agent_packages
